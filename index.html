@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Broken Graph</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        #game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #graph {
+            width: min(90vw, 800px);
+            height: min(60vh, 500px);
+
+            background: #181818;
+            border: 2px solid #444;
+            border-radius: 12px;
+        }
+
+        #controls {
+            width: min(90vw, 800px);
+            display: flex;
+            gap: 10px;
+        }
+
+        #formula {
+            flex: 1;
+            padding: 12px;
+
+            background: #222;
+            color: white;
+
+            border: 1px solid #555;
+            border-radius: 8px;
+
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 20px;
+
+            background: #fff;
+            color: #111;
+
+            border: 0;
+            border-radius: 8px;
+
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #ddd;
+        }
+
+        #error {
+            color: #ff6666;
+            min-height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Broken Graph</h1>
+    <p>Formula → Graph</p>
+</header>
+
+<main id="game">
+
+    <canvas id="graph"></canvas>
+
+    <div id="controls">
+        <input
+            id="formula"
+            type="text"
+            value="sin(x)"
+            placeholder="Например: sin(x)"
+        >
+
+        <button id="draw">
+            Нарисовать
+        </button>
+    </div>
+
+    <div id="error"></div>
+
+</main>
+
+<script>
+
+const canvas = document.getElementById("graph");
+const ctx = canvas.getContext("2d");
+
+const formulaInput = document.getElementById("formula");
+const drawButton = document.getElementById("draw");
+const error = document.getElementById("error");
+
+
+function resizeCanvas() {
+
+    const rect = canvas.getBoundingClientRect();
+
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+
+}
+
+
+function drawGraph() {
+
+    resizeCanvas();
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const scaleX = width / 20;
+    const scaleY = height / 14;
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+
+    // Сетка
+
+    ctx.strokeStyle = "#292929";
+    ctx.lineWidth = 1;
+
+    for (let x = -10; x <= 10; x++) {
+
+        const screenX = centerX + x * scaleX;
+
+        ctx.beginPath();
+        ctx.moveTo(screenX, 0);
+        ctx.lineTo(screenX, height);
+        ctx.stroke();
+
+    }
+
+    for (let y = -7; y <= 7; y++) {
+
+        const screenY = centerY - y * scaleY;
+
+        ctx.beginPath();
+        ctx.moveTo(0, screenY);
+        ctx.lineTo(width, screenY);
+        ctx.stroke();
+
+    }
+
+
+    // Оси
+
+    ctx.strokeStyle = "#777";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(centerX, 0);
+    ctx.lineTo(centerX, height);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, centerY);
+    ctx.lineTo(width, centerY);
+    ctx.stroke();
+
+
+    // Формула
+
+    const formula = formulaInput.value.trim();
+
+    if (!formula) {
+        return;
+    }
+
+
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+
+    let firstPoint = true;
+
+
+    try {
+
+        for (let pixelX = 0; pixelX <= width; pixelX++) {
+
+            const x =
+                (pixelX - centerX) / scaleX;
+
+
+            /*
+             * ВАЖНО:
+             *
+             * Пока это только прототип.
+             *
+             * В следующей версии заменим
+             * этот eval на собственный
+             * безопасный парсер формул.
+             */
+
+            const y = Function(
+                "x",
+                "return " + formula
+            )(x);
+
+
+            if (!Number.isFinite(y)) {
+
+                firstPoint = true;
+                continue;
+
+            }
+
+
+            const pixelY =
+                centerY - y * scaleY;
+
+
+            if (
+                pixelY < -10000 ||
+                pixelY > 10000
+            ) {
+
+                firstPoint = true;
+                continue;
+
+            }
+
+
+            if (firstPoint) {
+
+                ctx.moveTo(
+                    pixelX,
+                    pixelY
+                );
+
+                firstPoint = false;
+
+            } else {
+
+                ctx.lineTo(
+                    pixelX,
+                    pixelY
+                );
+
+            }
+
+        }
+
+
+        ctx.stroke();
+
+        error.textContent = "";
+
+    } catch (e) {
+
+        error.textContent =
+            "Ошибка в формуле";
+
+    }
+
+}
+
+
+drawButton.addEventListener(
+    "click",
+    drawGraph
+);
+
+
+formulaInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key === "Enter") {
+            drawGraph();
+        }
+
+    }
+);
+
+
+window.addEventListener(
+    "resize",
+    drawGraph
+);
+
+
+drawGraph();
+
+</script>
+
+</body>
+</html>
