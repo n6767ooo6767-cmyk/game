@@ -1,59 +1,74 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Broken Graph</title>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
     <header>
         <h1>Broken Graph</h1>
-        <p>Formula → Graph</p>
+        <p>Сломанный телефон, но с графиками</p>
     </header>
 
-
     <main id="game">
+        <section class="card">
+            <div class="player-info">
+                <span>Игрок 1</span>
+                <span id="round">Раунд 1</span>
+            </div>
 
-        <canvas id="graph"></canvas>
+            <h2>Нарисуй формулу</h2>
 
+            <p class="hint">
+                Напиши математическую функцию, а остальные увидят только её график.
+            </p>
 
-        <div id="controls">
+            <div class="formula-row">
+                <input
+                    id="formula"
+                    type="text"
+                    value="sin(x)"
+                    placeholder="Например: x^2"
+                    autocomplete="off"
+                    spellcheck="false"
+                >
 
-            <input
-                id="formula"
-                type="text"
-                value="sin(x)"
-                placeholder="Например: sin(x)"
-                autocomplete="off"
-            >
+                <button id="draw">Нарисовать</button>
+            </div>
 
-            <button id="draw">
-                Нарисовать
-            </button>
+            <div id="error"></div>
+        </section>
 
-        </div>
+        <section class="graph-card">
+            <canvas id="graph"></canvas>
+        </section>
 
+        <section class="card guess-card">
+            <h2>Что это за формула?</h2>
 
-        <div id="error"></div>
+            <div class="guess-row">
+                <input
+                    id="guess"
+                    type="text"
+                    placeholder="Твоя догадка..."
+                    autocomplete="off"
+                    spellcheck="false"
+                >
 
+                <button id="guessButton">Угадать</button>
+            </div>
+
+            <div id="guessResult"></div>
+        </section>
     </main>
 
+    <footer>
+        <span>Broken Graph MVP</span>
+    </footer>
 
     <script src="script.js"></script>
-
 </body>
-
 </html>
